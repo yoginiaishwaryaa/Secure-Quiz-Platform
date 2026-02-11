@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Quiz Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg sticky-top mb-4">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/">
+                <span class="navbar-brand">SecureQuiz</span>
+            </a>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    {% if session.get('user_id') %}
+                    {% if request.path != '/' %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('quiz.leaderboard') }}">Leaderboard</a>
+                    </li>
+                    {% if session.get('role') == 'player' %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('quiz.history') }}">History</a>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <button class="nav-link bg-transparent border-0" onclick="globalDeleteAccount()">Delete
+                            Account</button>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.logout') }}">Logout</a>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.login') }}">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-palette-primary btn-sm mt-1 px-3">
+                            Get Started
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Simple script to handle JSON posts
+        async function postJSON(url, data) {
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.indexOf("application/json") !== -1) {
+                    return await response.json();
+                } else {
+                    const text = await response.text();
+                    console.error("Non-JSON response:", text);
+                    return { message: "Server error: " + response.statusText };
+                }
+            } catch (e) {
+                console.error("Fetch error:", e);
+                return { message: "Network error" };
+            }
+        }
+        async function globalDeleteAccount() {
+            const role = "{{ session.get('role') }}";
+            let warning = "This will permanently delete your account and ALL your data. This CANNOT be undone.";
+            if (role === 'moderator') {
+                warning = "CRITICAL: This will delete your account and all quizzes you created. This CANNOT be undone.";
+            }
+
+            if (!confirm(warning)) return;
+
+            const res = await postJSON('/auth/delete_account', {});
+            alert(res.message);
+            if (res.redirect) {
+                window.location.href = res.redirect;
+            }
+        }
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+
+</html>

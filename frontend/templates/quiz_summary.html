@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="glass-panel">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Leaderboard: {{ quiz.title }}</h2>
+        {% if session.get('role') == 'admin' %}
+        <!-- Wait, role is invalid in session check if not stored directly, usually just user_id. Need to check backend injection or user object. `current_user` isn't available unless LoginManager. I'll use Javascript history for safety or query user. -->
+        <a href="javascript:history.back()" class="btn btn-outline-secondary">Back</a>
+        {% else %}
+        <a href="{{ url_for('quiz.moderator_dashboard') }}" class="btn btn-outline-secondary">Back</a>
+        {% endif %}
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card p-3 text-center">
+                <h5>Total Attempts</h5>
+                <p class="display-6 text-palette-primary fw-bold">{{ summary|length }}</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card p-3 text-center">
+                <h5>Status</h5>
+                {% if quiz.is_active %}
+                <span class="badge badge-status-active">Active</span>
+                {% else %}
+                <span class="badge badge-status-ended">Ended</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Player</th>
+                    <th>Score (Correct)</th>
+                    <th>XP Earned</th>
+                    <th>Time</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in summary %}
+                <tr>
+                    <td class="fw-bold">{{ row.username }}</td>
+                    <td>{{ row.correct_count }}</td>
+                    <td><span class="xp-badge">{{ row.xp }} XP</span></td>
+                    <td class="text-muted small">{{ row.timestamp }}</td>
+                    <td>
+                        <a href="{{ url_for('quiz.attempt_details', score_id=row.score_id) }}"
+                            class="btn btn-sm btn-palette-primary">View Details</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="text-center text-muted">No attempts yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

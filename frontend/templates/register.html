@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="glass-panel mt-5">
+            <h2 class="text-center mb-4">Register</h2>
+            <form id="registerForm">
+                <div class="mb-3">
+                    <label class="form-label">Username</label>
+                    <input type="text" name="username" class="form-control" autocomplete="username" required>
+                    <div class="invalid-feedback"></div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" name="email" class="form-control" autocomplete="email" required>
+                    <div class="invalid-feedback"></div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <input type="password" name="password" class="form-control" autocomplete="new-password" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Role</label>
+                    <select class="form-select" name="role" id="role">
+                        <option value="player">Player</option>
+                        <option value="moderator">Moderator</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-palette-primary w-100">Sign Up</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = e.target.querySelector('button[type="submit"]');
+        btn.disabled = true;
+        btn.innerText = "Registering...";
+
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData.entries());
+
+        // Clear previous errors
+        e.target.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+
+        try {
+            const res = await postJSON("{{ url_for('auth.register') }}", data);
+            if (res.message && res.message.includes('registered successfully')) {
+                alert(res.message);
+                window.location.href = "{{ url_for('auth.login') }}";
+            } else {
+                if (res.field) {
+                    const fieldInput = e.target.querySelector(`[name="${res.field}"]`);
+                    if (fieldInput) {
+                        fieldInput.classList.add('is-invalid');
+                        const feedback = fieldInput.nextElementSibling;
+                        if (feedback && feedback.classList.contains('invalid-feedback')) {
+                            feedback.innerText = res.message;
+                        }
+                    }
+                } else {
+                    alert(res.message || 'Error registering');
+                }
+                btn.disabled = false;
+                btn.innerText = "Sign Up";
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Unexpected error");
+            btn.disabled = false;
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}

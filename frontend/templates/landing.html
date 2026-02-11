@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row align-items-center min-vh-75 py-5">
+    <div class="col-lg-6">
+        <h1 class="display-3 fw-bold mb-4">
+            Gamify Your <br>
+            <span class="text-gradient">Knowledge Checks</span>
+        </h1>
+        <p class="lead text-muted mb-5">
+            A secure, role-based quiz platform powered by hybrid cryptography.
+            Earn XP, maintain streaks, and verify your achievements on the blockchain (simulated).
+        </p>
+
+        <div class="d-flex gap-3">
+            {% if session.get('user_id') %}
+            <a href="/" class="btn btn-palette-primary btn-lg px-5">Go to Dashboard</a>
+            {% else %}
+            <a href="{{ url_for('auth.register') }}" class="btn btn-palette-primary btn-lg px-4">Get Started</a>
+            <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary btn-lg px-4">Login</a>
+            {% endif %}
+        </div>
+
+        <div class="mt-5 d-flex gap-4 text-muted small">
+            <div class="d-flex align-items-center">
+                <span class="badge bg-palette-accent rounded-pill me-2">✓</span> NIST Auth
+            </div>
+            <div class="d-flex align-items-center">
+                <span class="badge badge-role-mod rounded-pill me-2">✓</span> AES Encryption
+            </div>
+            <div class="d-flex align-items-center">
+                <span class="badge badge-role-player rounded-pill me-2">✓</span> RSA Signatures
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6 mt-5 mt-lg-0">
+        <div class="glass-panel p-4 position-relative">
+            <div
+                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-palette-accent px-3 py-2">
+                Live Demo
+            </div>
+            <!-- Mock UI Element -->
+            <div class="mb-3 p-3 card border rounded-3 shadow-sm">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="fw-bold text-palette-primary">Cryptography Quiz</span>
+                    <span class="badge badge-role-mod">Active</span>
+                </div>
+                <div class="progress" style="height: 8px;">
+                    <div class="progress-bar bg-gradient" style="width: 75%"></div>
+                </div>
+            </div>
+
+            <div class="mb-3 p-3 card border rounded-3 shadow-sm">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="fw-bold text-palette-primary">Network Security</span>
+                    <span class="badge badge-role-player">Completed</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">Score: 9/10</small>
+                    <span class="xp-badge py-1 px-2" style="font-size: 0.7em;">+95 XP</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

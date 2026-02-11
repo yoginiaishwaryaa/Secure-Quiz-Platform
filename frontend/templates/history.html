@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>My Attempt History & Rewards</h2>
+    <a href="{{ url_for('quiz.player_dashboard') }}" class="btn btn-outline-secondary">Back to Dashboard</a>
+</div>
+
+<div class="table-responsive glass-panel">
+    <table class="table table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Quiz</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Score</th>
+                <th>XP Reward</th>
+                <th>Certificate</th>
+                <th>Key</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in history %}
+            <tr>
+                <td class="fw-bold">{{ item.quiz_title }}</td>
+                <td class="text-muted small">{{ item.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td>
+                    {% if item.quiz_active %}
+                    <span class="badge bg-palette-accent">Active</span>
+                    {% else %}
+                    <span class="badge bg-palette-secondary">Closed</span>
+                    {% endif %}
+                </td>
+                <td class="fw-bold text-palette-primary">{{ item.raw_score }}</td>
+                <td>
+                    {% if item.xp_earned > 0 %}
+                    <span class="xp-badge">{{ item.xp_earned }} XP</span>
+                    {% else %}
+                    <span class="badge badge-role-player">Pending</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if item.signature %}
+                    <button class="btn btn-sm btn-outline-primary"
+                        onclick="alert('Digital Signature (Base64):\n{{ item.signature }}')">View</button>
+                    {% else %}
+                    <span class="text-muted">-</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if item.answers %}
+                    <button class="btn btn-sm btn-palette-primary" data-bs-toggle="modal"
+                        data-bs-target="#answersModal{{ loop.index }}">Answers</button>
+
+                    <!-- Answers Modal -->
+                    <div class="modal fade" id="answersModal{{ loop.index }}" tabindex="-1">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Correct Answers: {{ item.quiz_title }}</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p class="small mb-3">These answers were encrypted until the quiz ended.
+                                        </p>
+                                        <ul class="list-group list-group-flush">
+                                            {% for q in item.answers %}
+                                            <li class="list-group-item">
+                                                <strong>{{ q.text }}</strong><br>
+                                                <small class="text-muted">Difficulty: {{ q.difficulty }}</small><br>
+                                                Correct: <span class="text-palette-success fw-bold">{{
+                                                    q.options[q.correct_option]
+                                                    }}</span>
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <span class="text-muted small">Locked</span>
+                        {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

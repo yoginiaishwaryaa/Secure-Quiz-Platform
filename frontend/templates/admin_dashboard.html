@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="mb-4">Admin Dashboard</h1>
+
+<div class="row mb-5">
+    <div class="col-md-4">
+        <div class="glass-panel text-center">
+            <h3>{{ users|length }}</h3>
+            <p>Total Users</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="glass-panel text-center">
+            <h3>{{ xp_stats.total }}</h3>
+            <p>Total XP Distributed</p>
+            <div class="d-flex justify-content-center gap-3 mt-2 small text-muted">
+                <span>Avg: {{ xp_stats.avg }}</span>
+                <span>Max: {{ xp_stats.max }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h3>All Users</h3>
+<div class="glass-panel mb-5">
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Role</th>
+                <th>Total XP</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr {% if user.is_blocked %}class="opacity-50 text-decoration-line-through" {% endif %}>
+                <td>{{ user.id }}</td>
+                <td>{{ user.username }}</td>
+                <td>
+                    <span
+                        class="badge {% if user.role == 'moderator' %}bg-palette-primary{% else %}bg-palette-secondary{% endif %}">
+                        {{ user.role }}
+                    </span>
+                    {% if user.is_blocked %}
+                    <span class="badge bg-palette-danger ms-1">BLOCKED</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if user.role == 'player' %}
+                    <span class="xp-badge">{{ user.total_xp }}</span>
+                    {% else %}
+                    <span class="text-muted">-</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="d-flex gap-2">
+                        {% if not user.is_blocked %}
+                        <button class="btn btn-sm btn-palette-danger" data-user-id="{{ user.id }}"
+                            onclick="blockUser(this.dataset.userId)">Block</button>
+                        {% endif %}
+                        <button class="btn btn-sm btn-palette-danger" data-user-id="{{ user.id }}"
+                            onclick="deleteUser(this.dataset.userId)">Delete</button>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<h3>Stage 1: Pending User Screening</h3>
+<div class="glass-panel mb-5">
+    {% if pending_users %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in pending_users %}
+            <tr>
+                <td>{{ user.username }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.role }}</td>
+                <td>
+                    <button class="btn btn-sm btn-palette-primary" data-user-id="{{ user.id }}"
+                        onclick="approveUser(this.dataset.userId)">Screen Registration</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="text-muted">No pending user registrations.</p>
+    {% endif %}
+</div>
+
+<h3>Stage 2: Access & Platform Verification (2FA Flow)</h3>
+<div class="glass-panel mb-5">
+    {% if pending_requests %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>User</th>
+                <th>Quiz</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for req in pending_requests %}
+            <tr>
+                <td>{{ req.username }}</td>
+                <td>
+                    {% if req.quiz_title %}
+                    <span class="badge bg-palette-primary">Quiz</span> {{ req.quiz_title }}
+                    {% else %}
+                    <span class="badge bg-palette-accent">Account Activation</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-palette-accent" data-req-id="{{ req.id }}"
+                        onclick="approveAccess(this.dataset.reqId)">Approve & Send OTP</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="text-muted">No pending access requests.</p>
+    {% endif %}
+</div>
+
+<h3>All Quizzes</h3>
+<div class="glass-panel mb-5">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Status</th>
+                <th>Created By (Moderator)</th>
+                <th>Access Code</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for quiz in quizzes %}
+            <tr>
+                <td>{{ quiz.id }}</td>
+                <td>{{ quiz.title }}</td>
+                <td class="text-center">
+                    {% if quiz.is_active %}<span class="badge bg-palette-accent">Active</span>{% else %}<span
+                        class="badge bg-palette-secondary">Ended</span>{% endif %}
+                </td>
+                <td>
+                    {% set creator = users|selectattr("id", "equalto", quiz.created_by)|first %}
+                    {{ creator.username if creator else 'Unknown' }} (ID: {{ quiz.created_by }})
+                </td>
+                <td>{{ quiz.access_code }}</td>
+                <td>
+                    <a href="{{ url_for('quiz.quiz_summary', quiz_id=quiz.id) }}"
+                        class="btn btn-sm btn-palette-primary">Stats & Details</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+
+    async function approveAccess(reqId) {
+        if (!confirm("Approve this user and send 2FA OTP?")) return;
+        const res = await postJSON(`/admin/approve_access/${reqId}`, {});
+        alert(res.message);
+        location.reload();
+    }
+
+    async function approveUser(userId) {
+        if (!confirm("Screen this user for registration? They will move to the 2FA list.")) return;
+        const res = await postJSON(`/admin/approve_user/${userId}`, {});
+        alert(res.message);
+        location.reload();
+    }
+
+    async function blockUser(userId) {
+        if (!confirm("BLOCK this user? They will not be able to login or re-register with this email.")) return;
+        const res = await postJSON(`/admin/block_user/${userId}`, {});
+        alert(res.message);
+        location.reload();
+    }
+
+    async function deleteUser(userId) {
+        if (!confirm("PERMANENTLY DELETE this user and all their quiz data?")) return;
+        const res = await postJSON(`/admin/delete_user/${userId}`, {});
+        alert(res.message);
+        location.reload();
+    }
+</script>
+{% endblock %}

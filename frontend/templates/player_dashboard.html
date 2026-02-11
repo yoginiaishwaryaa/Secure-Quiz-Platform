@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Welcome, {{ session['username'] }}!
+        <span class="xp-badge ms-2">{{ user.total_xp }} XP</span>
+    </h2>
+</div>
+
+{% if error %}
+<div class="alert alert-danger">{{ error }}</div>
+{% endif %}
+
+<div class="row">
+    {% for quiz in quizzes %}
+    <div class="col-md-4 mb-4">
+        <div class="glass-panel h-100 d-flex flex-column">
+            <h4 class="fw-bold mb-2">{{ quiz.title }}</h4>
+            <div class="text-muted small mb-3">ID: {{ quiz.id }}</div>
+
+            <div class="mt-auto">
+                {% if quiz.id in attempted_ids %}
+                <button class="btn btn-palette-secondary w-100" disabled>✅ Attempted</button>
+                {% else %}
+                <div id="action-area-{{ quiz.id }}">
+                    {% set status = request_map.get(quiz.id) %}
+
+                    {% if not status %}
+                    <button class="btn btn-palette-primary w-100" data-quiz-id="{{ quiz.id }}"
+                        onclick="requestAccess(this.dataset.quizId)">
+                        📩 Request Access
+                    </button>
+                    {% elif status == 'pending' %}
+                    <div class="alert alert-warning py-2 mb-0 text-center small">
+                        ⏳ Waiting for Admin Approval...
+                    </div>
+                    {% elif status == 'approved' %}
+                    <div class="input-group">
+                        <input type="text" id="otp-{{ quiz.id }}" class="form-control" placeholder="6-digit OTP">
+                        <button class="btn btn-palette-accent" data-quiz-id="{{ quiz.id }}"
+                            onclick="verifyOTP(this.dataset.quizId)">Verify</button>
+                    </div>
+                    <small class="text-palette-primary fw-bold mt-1 d-block text-center">📩 Check email for OTP</small>
+                    {% elif status == 'verified' %}
+                    <div class="alert alert-success py-2 mb-2 text-center shadow-sm"
+                        style="background-color: var(--color-primary); color: #EAF8F5; border: none;">
+                        <small class="fw-bold">✓ Access Verified</small>
+                    </div>
+                    <button class="btn btn-palette-accent w-100 mt-2" data-quiz-id="{{ quiz.id }}"
+                        onclick="startQuiz(this.dataset.quizId)">
+                        ▶ Enter Code & Start
+                    </button>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12 text-center text-muted py-5">
+        <h3>No active quizzes available.</h3>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- slide -->
+<script>
+    async function requestAccess(quizId) {
+        const res = await postJSON(`/quiz/request_access/${quizId}`, {});
+        alert(res.message);
+        location.reload();
+    }
+
+    async function verifyOTP(quizId) {
+        const otp = document.getElementById(`otp-${quizId}`).value;
+        if (!otp) return alert("Enter OTP");
+
+        const res = await postJSON(`/quiz/verify_otp/${quizId}`, { otp });
+        if (res.access_code) {
+            const area = document.getElementById(`action-area-${quizId}`);
+            // Reveal code ONCE in a special alert
+            area.innerHTML = `
+                <div class="alert alert-info mt-2">
+                    <p class="mb-1 small">Your Access Code:</p>
+                    <h5 class="fw-bold mb-2">${res.access_code}</h5>
+                    <button class="btn btn-sm btn-outline-dark w-100 mb-2" onclick="navigator.clipboard.writeText('${res.access_code}'); alert('Copied!');">
+                        📋 Copy Code
+                    </button>
+                    <button class="btn btn-palette-accent w-100" onclick="startQuiz(${quizId})">
+                        ▶ Start Quiz
+                    </button>
+                </div>
+            `;
+        } else {
+            alert(res.message || "Invalid OTP");
+        }
+    }
+
+    function startQuiz(quizId) {
+        const code = prompt("Please enter the Access Code to confirm and start the quiz:");
+        if (code) {
+            window.location.href = `/quiz/attempt/${quizId}?code=${code}`;
+        }
+    }
+
+
+    // Refresh display based on status (rendered by Jinja but enhanced here if needed)
+    document.addEventListener('DOMContentLoaded', async () => {
+        // We could fetch actual request statuses here to render OTP inputs
+        // For simplicity, let's let Jinja handle the logic if we pass request map
+    });
+</script>
+{% endblock %}

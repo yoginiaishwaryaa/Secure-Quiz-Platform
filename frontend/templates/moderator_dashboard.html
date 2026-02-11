@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Moderator Panel: {{ session['username'] }}</h2>
+    <div class="d-flex gap-2">
+        <button class="btn btn-palette-primary" data-bs-toggle="modal" data-bs-target="#createQuizModal">Create New
+            Quiz</button>
+    </div>
+</div>
+
+<!-- Quiz List -->
+<div class="row">
+    {% for quiz in quizzes %}
+    <div class="col-md-6 mb-4">
+        <div class="glass-panel">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="mb-0">{{ quiz.title }}</h4>
+                {% if quiz.is_active %}
+                <span class="badge badge-status-active">Active</span>
+                {% else %}
+                <span class="badge badge-status-ended">Ended</span>
+                {% endif %}
+            </div>
+            <p class="mt-2 text-palette-accent fw-bold border-bottom pb-2">Access Code: {{ quiz.access_code or 'N/A' }}
+            </p>
+            <p class="small text-muted">ID: {{ quiz.id }}</p>
+
+            <div class="d-flex gap-2 mt-3">
+                {% if quiz.is_active %}
+                <button class="btn btn-palette-danger btn-sm" onclick="endQuiz('{{ quiz.id }}')">End Quiz</button>
+                <button class="btn btn-palette-primary btn-sm" onclick="showQR('{{ quiz.id }}')">Show QR</button>
+                {% else %}
+                <p class="small text-muted mb-0 d-flex align-items-center me-auto">Ended: {{ quiz.end_time }}</p>
+                {% endif %}
+                <a href="{{ url_for('quiz.quiz_summary', quiz_id=quiz.id) }}"
+                    class="btn btn-palette-secondary btn-sm">Leaderboard</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Create Quiz Modal -->
+<div class="modal fade" id="createQuizModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create Encrypted Quiz</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="quizFormSection">
+                    <form id="createQuizForm">
+                        <div class="mb-3">
+                            <label class="form-label">Quiz Title</label>
+                            <input type="text" name="title" class="form-control" required>
+                        </div>
+
+                        <hr>
+                        <h6>Questions</h6>
+                        <div id="questionsContainer"></div>
+                        <button type="button" class="btn btn-outline-primary btn-sm mb-3" onclick="addQuestion()">+ Add
+                            Question</button>
+
+                        <button type="submit" class="btn btn-palette-primary w-100">Encrypt & Launch</button>
+                    </form>
+                </div>
+
+                <div id="otpSection" style="display: none;">
+                    <div class="alert alert-info py-2 small">
+                        🛡️ 2FA Verification: An OTP has been sent to your email. Enter it below to authorize encryption
+                        and launch.
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Verification OTP</label>
+                        <input type="text" id="quizCreateOtp" class="form-control text-center fs-4 fw-bold"
+                            placeholder="000000" maxlength="6">
+                    </div>
+                    <button type="button" class="btn btn-palette-accent w-100" onclick="finalLaunchQuiz()">Confirm &
+                        Launch</button>
+                    <button type="button" class="btn btn-link btn-sm w-100 mt-2 text-muted" onclick="backToQuizForm()">←
+                        Back to edit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- QR Modal -->
+<div class="modal fade" id="qrModal" tabindex="-1">
+    <div class="modal-dialog text-center">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Quiz Access QR</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h1 id="qrCodeDisplay" class="display-1 text-palette-primary fw-bold mb-3"></h1>
+                <img id="qrImage" src="" class="img-fluid mb-3" style="max-width: 300px;">
+                <p>Scan to get Access Code</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+    // QR Logic
+    async function showQR(id) {
+        const res = await fetch(`/quiz/qr/${id}`);
+        const data = await res.json();
+
+        if (data.qr_image) {
+            document.getElementById('qrImage').src = `data:image/png;base64,${data.qr_image}`;
+            new bootstrap.Modal(document.getElementById('qrModal')).show();
+        }
+    }
+    let qCount = 0;
+
+    function addQuestion() {
+        qCount++;
+        const html = `
+    <div class="card mb-3 p-3" id="q-${qCount}">
+        <div class="d-flex justify-content-between mb-2">
+            <input type="text" class="form-control me-2" placeholder="Question Text" name="q_text_${qCount}" required>
+            <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeQuestion(${qCount})">✕</button>
+        </div>
+        <div class="row g-2 mb-3">
+            <div class="col-md-6">
+                <label class="form-label small text-muted text-uppercase fw-bold">Options</label>
+                <input type="text" class="form-control form-control-sm mb-2" placeholder="Option 1" name="q_o1_${qCount}" required>
+                <input type="text" class="form-control form-control-sm mb-2" placeholder="Option 2" name="q_o2_${qCount}" required>
+                <input type="text" class="form-control form-control-sm mb-2" placeholder="Option 3" name="q_o3_${qCount}" required>
+                <input type="text" class="form-control form-control-sm" placeholder="Option 4" name="q_o4_${qCount}" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label small text-muted text-uppercase fw-bold">Configuration</label>
+                <div class="mb-2">
+                    <label class="small text-palette-primary">Correct Answer</label>
+                    <select class="form-select form-select-sm border-palette-primary" name="q_correct_${qCount}">
+                        <option value="0">Option 1</option>
+                        <option value="1">Option 2</option>
+                        <option value="2">Option 3</option>
+                        <option value="3">Option 4</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="small text-palette-primary">Difficulty</label>
+                    <input type="number" class="form-control form-control-sm border-palette-primary" placeholder="Level" name="q_diff_${qCount}" value="1" min="1" required>
+                </div>
+            </div>
+        </div>
+    </div>
+    `;
+        document.getElementById('questionsContainer').insertAdjacentHTML('beforeend', html);
+    }
+
+    function removeQuestion(id) {
+        document.getElementById(`q-${id}`).remove();
+    }
+
+    // Init with 1 question
+    addQuestion();
+
+    let currentQuizData = null;
+
+    document.getElementById('createQuizForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+
+        const btn = e.submitter || e.target.querySelector('button[type="submit"]');
+        if (btn.disabled) return;
+
+        btn.disabled = true;
+        const originalBtnText = btn.innerText;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Processing...';
+
+        const formData = new FormData(e.target);
+
+        // Parse complex form to JSON structure
+        const title = formData.get('title');
+        const questions = [];
+
+        for (let i = 1; i <= qCount; i++) {
+            if (!formData.get(`q_text_${i}`)) continue;
+
+            questions.push({
+                id: i,
+                text: formData.get(`q_text_${i}`),
+                options: [
+                    formData.get(`q_o1_${i}`),
+                    formData.get(`q_o2_${i}`),
+                    formData.get(`q_o3_${i}`),
+                    formData.get(`q_o4_${i}`)
+                ],
+                correct_option: parseInt(formData.get(`q_correct_${i}`)),
+                difficulty: parseInt(formData.get(`q_diff_${i}`))
+            });
+        }
+
+        currentQuizData = { title, questions };
+
+        // Request OTP
+        try {
+            const res = await postJSON("/quiz/request_create_otp", {});
+            if (res.message) {
+                // Show OTP section
+                document.getElementById('quizFormSection').style.display = 'none';
+                document.getElementById('otpSection').style.display = 'block';
+            } else {
+                alert("Failed to send OTP. Please try again.");
+                btn.disabled = false;
+                btn.innerText = originalBtnText;
+            }
+        } catch (err) {
+            alert("Network error. Try again.");
+            btn.disabled = false;
+            btn.innerText = originalBtnText;
+        }
+    });
+
+    async function finalLaunchQuiz() {
+        const otp = document.getElementById('quizCreateOtp').value;
+        if (!otp) return alert("Please enter the OTP.");
+
+        const btn = document.querySelector('#otpSection .btn-palette-accent');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Launching...';
+
+        const res = await postJSON("{{ url_for('quiz.create_quiz') }}", { ...currentQuizData, otp });
+        if (res.quiz_id) {
+            alert('Quiz Created, Encrypted & Authorized!');
+            location.reload();
+        } else {
+            alert(res.message || "Failed to create quiz.");
+            btn.disabled = false;
+            btn.innerText = "Confirm & Launch";
+        }
+    }
+
+    function backToQuizForm() {
+        document.getElementById('quizFormSection').style.display = 'block';
+        document.getElementById('otpSection').style.display = 'none';
+    }
+
+    async function endQuiz(id) {
+        if (!confirm('Are you sure? This will reveal answers to all players.')) return;
+        const res = await postJSON(`/quiz/end/${id}`, {});
+        alert(res.message);
+        location.reload();
+    }
+</script>
+{% endblock %}
+{% endblock %}

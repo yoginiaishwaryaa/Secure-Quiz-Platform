@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="glass-panel">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">🏆 Global Leaderboard</h1>
+        <a href="javascript:history.back()" class="btn btn-outline-secondary">Back</a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th scope="col" class="text-center" style="width: 100px;">Rank</th>
+                    <th scope="col">Player</th>
+                    <th scope="col" class="text-end">Total XP</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in leaderboard %}
+                <tr>
+                    <td class="text-center">
+                        {% if loop.index == 1 %}🥇
+                        {% elif loop.index == 2 %}🥈
+                        {% elif loop.index == 3 %}🥉
+                        {% else %}#{{ loop.index }}{% endif %}
+                    </td>
+                    <td class="fw-bold fs-5">
+                        {{ user.username }}
+                        <span
+                            class="badge {% if user.role == 'moderator' %}badge-role-mod{% else %}badge-role-player{% endif %} ms-2"
+                            style="font-size: 0.6em;">{{ user.role }}</span>
+                    </td>
+                    <td class="text-end font-monospace fw-bold">
+                        <span class="xp-badge">{{ user.total_xp }} XP</span>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="3" class="text-center text-muted">No players found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

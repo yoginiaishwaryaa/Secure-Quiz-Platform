@@ -1,0 +1,484 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+    /* PASTEL EMERALD LIGHT THEME */
+    --color-bg: #EAF8F5;
+    /* Soft Mint Pastel Background */
+    --color-text: #063D32;
+    /* Deep Forest Emerald for text */
+    --color-primary: #0CBF94;
+    /* The Emerald from palette */
+    --color-secondary: #A3EAD8;
+    /* Light Pastel Emerald */
+    --color-accent: #00897B;
+    /* Muted Teal Accent */
+    --color-danger: #D66D67;
+    /* Muted Red-Coral for errors */
+
+    --primary: var(--color-primary);
+    --primary-hover: #09A681;
+    --secondary: var(--color-secondary);
+
+    --bg-body: var(--color-bg);
+    --bg-card: rgba(255, 255, 255, 0.95);
+    /* Clean white-ish cards */
+    --bg-glass: #A3EAD8;
+
+    --text-main: var(--color-text);
+    --text-muted: #5D8C85;
+
+    --border-color: rgba(12, 191, 148, 0.15);
+    --shadow-premium: 0 10px 40px -10px rgba(12, 191, 148, 0.1);
+
+    --radius: 1.25rem;
+}
+
+body {
+    background: var(--color-bg);
+    color: var(--text-main);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    color: var(--color-text);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+}
+
+/* Premium Navbar */
+.navbar {
+    background-color: #044f3d !important;
+    /* Solid Emerald */
+    padding: 0.85rem 0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border-bottom: none;
+}
+
+.navbar-brand {
+    color: #EAF8F5 !important;
+    /* Light Mint on Dark Emerald */
+    font-weight: 800;
+    font-size: 1.4rem;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    align-items: center;
+}
+
+.nav-link {
+    color: #EAF8F5 !important;
+    /* Light Mint on Dark Emerald */
+    font-weight: 700;
+    font-size: 0.95rem;
+    padding: 0.5rem 1rem !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 0.85;
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
+
+.nav-link:hover {
+    color: #FFD700 !important;
+    /* Gold Hover */
+    opacity: 1;
+    transform: translateY(-1px);
+}
+
+/* Glass Panels & Premium Cards */
+.glass-panel,
+.card {
+    background: var(--bg-card);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-premium);
+    padding: 2.5rem;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.card:hover,
+.glass-panel:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 25px 50px -12px rgba(122, 119, 185, 0.25);
+    border-color: var(--color-secondary);
+}
+
+/* Color Accent Bar for Cards */
+.card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: var(--color-primary);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.card:hover::after {
+    opacity: 1;
+}
+
+/* Badges with Soft Colors */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.6em 1.25em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border-radius: 2rem;
+    line-height: 1;
+    font-size: 0.65rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.bg-success {
+    background: var(--color-primary) !important;
+    color: #EAF8F5 !important;
+    /* Light text on Dark BG */
+}
+
+.bg-danger {
+    background: var(--color-danger) !important;
+    color: #EAF8F5 !important;
+    /* Light text on Dark BG */
+}
+
+.bg-secondary {
+    background-color: var(--color-secondary) !important;
+    color: white !important;
+    border: none;
+}
+
+.bg-warning {
+    background-color: var(--color-accent) !important;
+    color: var(--color-text) !important;
+}
+
+.bg-danger {
+    background-color: var(--color-danger) !important;
+    color: white !important;
+}
+
+/* Alert Overrides */
+.alert {
+    border-radius: 1rem;
+    border: none;
+    padding: 1rem 1.5rem;
+    font-weight: 500;
+}
+
+.alert-info {
+    background-color: rgba(12, 191, 148, 0.1);
+    color: var(--color-primary);
+    border: 1px solid var(--border-color);
+}
+
+.alert-warning {
+    background-color: rgba(29, 233, 182, 0.1);
+    color: var(--color-accent);
+    border: 1px solid rgba(29, 233, 182, 0.2);
+}
+
+.alert-success {
+    background-color: rgba(12, 191, 148, 0.15);
+    color: var(--color-primary);
+    border: 1px solid var(--border-color);
+}
+
+.alert-danger {
+    background-color: rgba(255, 82, 82, 0.1);
+    color: var(--color-danger);
+    border: 1px solid rgba(255, 82, 82, 0.2);
+}
+
+/* Buttons with Premium Feel */
+.btn {
+    font-weight: 700;
+    padding: 0.85rem 2.2rem;
+    border-radius: var(--radius);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border: none;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+}
+
+.btn-primary,
+.btn-primary-glow {
+    background: var(--color-primary);
+    color: white !important;
+    box-shadow: 0 4px 12px rgba(29, 94, 98, 0.15);
+}
+
+.btn-primary:hover,
+.btn-primary-glow:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(122, 119, 185, 0.35);
+    filter: brightness(1.05);
+}
+
+.btn-secondary {
+    background-color: var(--color-secondary);
+    color: white;
+}
+
+.btn-outline-primary {
+    border: 2px solid var(--color-primary);
+    color: var(--color-primary);
+    background: transparent;
+}
+
+.btn-danger {
+    background: var(--color-danger);
+    color: white;
+}
+
+/* Forms with Interactive Focus */
+.form-control,
+.form-select {
+    background-color: rgba(255, 255, 255, 0.7);
+    border: 1px solid var(--border-color);
+    color: var(--color-text);
+    border-radius: 0.75rem;
+    padding: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    background-color: white;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 4px rgba(12, 191, 148, 0.12);
+    transform: scale(1.01);
+}
+
+/* Typography Enhancements */
+.text-primary {
+    color: var(--color-primary) !important;
+}
+
+.text-warning {
+    color: var(--color-accent) !important;
+}
+
+.text-danger {
+    color: var(--color-danger) !important;
+}
+
+.text-muted {
+    color: var(--text-muted) !important;
+}
+
+.text-gradient {
+    color: var(--color-text);
+    font-weight: 800;
+}
+
+.xp-badge {
+    background: #FFD700 !important;
+    /* Solid Gold */
+    color: #4A3C00 !important;
+    /* Dark Brown for contrast on gold */
+    padding: 0.4rem 1.2rem;
+    border-radius: 2rem;
+    font-weight: 800;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    display: inline-flex;
+    align-items: center;
+    border: none !important;
+}
+
+/* Progress Bar */
+.progress {
+    background-color: rgba(122, 119, 185, 0.1);
+    border-radius: 2rem;
+    overflow: hidden;
+    height: 10px;
+}
+
+.progress-bar {
+    background: var(--color-primary) !important;
+}
+
+/* Tables with Minimal Style */
+table {
+    border-collapse: separate;
+    border-spacing: 0 0.75rem;
+    width: 100%;
+}
+
+.table thead th {
+    color: var(--text-muted);
+    border: none;
+    padding: 1rem;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+}
+
+.table tbody tr {
+    background-color: white;
+    border: 1px solid var(--border-color);
+    border-radius: 1rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+    transition: all 0.3s ease;
+}
+
+.table tbody td {
+    padding: 1.5rem;
+    color: var(--color-text);
+    vertical-align: middle;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card,
+.glass-panel {
+    animation: fadeInUp 0.5s ease-out forwards;
+}
+
+/* High-Contrast Status & Role Badges - RIGOROUS ENFORCEMENT */
+span.badge.badge-status-active,
+span.badge.badge-role-mod {
+    background-color: #0CBF94 !important;
+    /* Solid Emerald - Dark */
+    color: #FFFFFF !important;
+    /* Pure White - Brightest Light */
+    font-weight: 800 !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    /* Enhanced definition */
+    padding: 0.6rem 1.2rem !important;
+    border-radius: 50px !important;
+    box-shadow: 0 4px 12px rgba(12, 191, 148, 0.2) !important;
+    border: none !important;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+span.badge.badge-status-ended,
+span.badge.badge-role-player {
+    background-color: #A3EAD8 !important;
+    /* Mint Background - Light */
+    color: #063D32 !important;
+    /* Deep Forest - Darkest Contrast */
+    font-weight: 800 !important;
+    padding: 0.6rem 1.2rem !important;
+    border-radius: 50px !important;
+    box-shadow: 0 4px 12px rgba(163, 234, 216, 0.15) !important;
+    border: none !important;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+.xp-badge {
+    background: #FFD700 !important;
+    /* Solid Gold */
+    color: #063D32 !important;
+    /* Deep Forest for contrast */
+    padding: 0.4rem 1.2rem;
+    border-radius: 2rem;
+    font-weight: 800;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    display: inline-flex;
+    align-items: center;
+    border: none !important;
+}
+
+/* PALETTE UTILITIES - To replace Bootstrap defaults */
+.bg-palette-primary {
+    background-color: var(--color-primary) !important;
+    color: white !important;
+}
+
+.bg-palette-secondary {
+    background-color: var(--color-secondary) !important;
+    color: white !important;
+}
+
+.bg-palette-accent {
+    background-color: var(--color-accent) !important;
+    color: var(--color-text) !important;
+}
+
+.bg-palette-danger {
+    background-color: var(--color-danger) !important;
+    color: white !important;
+}
+
+.text-palette-primary {
+    color: var(--color-primary) !important;
+}
+
+.text-palette-secondary {
+    color: var(--color-secondary) !important;
+}
+
+.text-palette-accent {
+    color: var(--color-accent) !important;
+}
+
+.text-palette-danger {
+    color: var(--color-danger) !important;
+}
+
+.btn-palette-primary {
+    background: var(--color-primary) !important;
+    color: white !important;
+    border: none !important;
+}
+
+.btn-palette-primary:hover {
+    background: #09A681 !important;
+    color: white !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(12, 191, 148, 0.25);
+}
+
+.btn-palette-accent {
+    background: var(--color-accent) !important;
+    color: var(--color-text) !important;
+    border: none !important;
+}
+
+.btn-palette-accent:hover {
+    background: #00D2A0 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(29, 233, 182, 0.2);
+}
+
+.btn-palette-danger {
+    background: var(--color-danger) !important;
+    color: white !important;
+    border: none !important;
+}
+
+.btn-palette-danger:hover {
+    background: #E53935 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 82, 82, 0.2);
+}

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="glass-panel">
+    <h2 class="mb-4">{{ quiz.title }}</h2>
+
+    <div id="quiz-container">
+        {% for q in questions %}
+        <div class="mb-4 p-3 border border-palette-secondary rounded">
+            <h5>Q{{ loop.index }}: {{ q.text }}</h5>
+            <div class="mt-2">
+                {% for option in q.options %}
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="q_{{ q.id }}" value="{{ loop.index0 }}"
+                        id="q_{{ q.id }}_{{ loop.index0 }}">
+                    <label class="form-check-label" for="q_{{ q.id }}_{{ loop.index0 }}">
+                        {{ option }}
+                    </label>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+        <button id="submitBtn" class="btn btn-palette-accent btn-lg w-100">Submit Answers</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.getElementById('submitBtn').addEventListener('click', async function () {
+        // Disable button immediately to prevent double-submit
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.innerText = "Submitting...";
+
+        const answers = {};
+        // Collect answers
+        document.querySelectorAll('input[type="radio"]:checked').forEach(input => {
+            const qId = input.name.replace('q_', '');
+            answers[qId] = input.value;
+        });
+
+        if (Object.keys(answers).length === 0) {
+            if (!confirm("You haven't answered any questions. Submit asking?")) {
+                btn.disabled = false;
+                btn.innerText = "Submit Answers";
+                return;
+            }
+        }
+
+        try {
+            const res = await postJSON("{{ url_for('quiz.submit_quiz', quiz_id=quiz.id) }}", { answers });
+            alert(res.message);
+            window.location.href = "{{ url_for('quiz.player_dashboard') }}";
+        } catch (e) {
+            console.error(e);
+            alert("Submission failed. Please try again.");
+            btn.disabled = false;
+            btn.innerText = "Submit Answers";
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="glass-panel mt-5">
+            <h2 class="text-center mb-4">2FA Verification</h2>
+            <p class="text-center text-muted">Check your console for the OTP code (Simulation)</p>
+            <form id="otpForm">
+                <div class="mb-3">
+                    <label class="form-label">Enter 6-digit Code</label>
+                    <input type="text" name="otp" class="form-control text-center fs-4" maxlength="6" required>
+                </div>
+                <button type="submit" class="btn btn-palette-primary w-100">Verify Identity</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+    document.getElementById('otpForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData.entries());
+
+        const res = await postJSON("{{ url_for('auth.verify_otp') }}", data);
+        if (res.redirect) {
+            window.location.href = res.redirect;
+        } else {
+            alert(res.message || 'Invalid OTP');
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}
